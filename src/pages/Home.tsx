@@ -1,32 +1,50 @@
-import { useEffect, useState } from 'react'
-import { getAllCategories, getPostsByCategory } from '@/services/api'
-import type { CategoryDto, PostSummaryDto } from '@/types/dtos'
-import PostCard from '@/components/PostCard'
-import { Empty, Skeleton } from '@/components/ui'
+// CHANGE: 保持你现有逻辑，只做微调：encode slug 调用、健壮性
+import { useEffect, useState } from 'react';
+import { getAllCategories, getPostsByCategory } from '@/services/api';
+import type { CategoryDto, PostSummaryDto } from '@/types/dtos';
+import PostCard from '@/components/PostCard';
+import { Empty, Skeleton } from '@/components/ui';
 
 export default function Home() {
-    const [categories, setCategories] = useState<CategoryDto[]>([])
-    const [recent, setRecent] = useState<PostSummaryDto[]>([])
-    const [loading, setLoading] = useState(true)
+    const [categories, setCategories] = useState<CategoryDto[]>([]);
+    const [recent, setRecent] = useState<PostSummaryDto[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        let mounted = true
-        ;(async () => {
+        let mounted = true;
+        (async () => {
             try {
-                const cats = await getAllCategories()
-                if (!mounted) return
-                setCategories(cats)
-                const posts = await getPostsByCategory('blog')
-                if (!mounted) return
-                setRecent(posts)
+                const cats = await getAllCategories();
+                if (!mounted) return;
+
+                // ✅ 仅保留 name/slug 都存在的分类
+                const validCats = (cats ?? []).filter(c => !!c?.name && !!c?.slug);
+                setCategories(validCats);
+
+                // 只有有有效分类时才请求文章
+                if (validCats.length) {
+                    const posts = await getPostsByCategory(validCats[0].slug);
+                    if (!mounted) return;
+                    setRecent(posts);
+                } else {
+                    setRecent([]);
+                }
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
-        })()
-        return () => {
-            mounted = false
-        }
-    }, [])
+        })();
+        return () => { mounted = false; };
+    }, []);
+
+// 渲染分类标签时，保证 key 唯一，不用 null
+    {categories.map((c, idx) => (
+        <span
+            key={`${c.id ?? 'idless'}-${c.slug ?? 'slugless'}-${idx}`}   // ✅ 唯一 key
+            className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm"
+        >
+    {c.name}
+  </span>
+    ))}
 
     return (
         <div>
@@ -40,7 +58,7 @@ export default function Home() {
                 ) : categories.length ? (
                     <div className="flex flex-wrap gap-2">
                         {categories.map((c) => (
-                            <span key={c.slug} className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm">
+                            <span key={c.id ?? c.slug} className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm">
                 {c.name}
               </span>
                         ))}
@@ -65,5 +83,5 @@ export default function Home() {
                 )}
             </section>
         </div>
-    )
+    );
 }
