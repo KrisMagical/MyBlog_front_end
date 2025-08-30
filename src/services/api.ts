@@ -1,4 +1,3 @@
-// CHANGE: API 客户端与 OpenAPI v0.0.1 对齐（分类更新用 PUT；post create/update 带 categorySlug）
 import axios from 'axios';
 import type {
     CategoryDto,
@@ -24,13 +23,11 @@ export async function getAllCategories(): Promise<CategoryDto[]> {
 }
 
 export async function createCategory(body: CategoryDto): Promise<CategoryDto> {
-    // CHANGE: 后端用 CategoryDto 作为请求体，我们仅发 name/slug（若 body.id 存在后端应忽略）
     const { data } = await api.post('/api/categories', { name: body.name, slug: body.slug });
     return data;
 }
 
 export async function updateCategory(id: number, body: CategoryDto): Promise<CategoryDto> {
-    // CHANGE: 与 OpenAPI 对齐：PUT /api/categories/{id}
     const { data } = await api.put(`/api/categories/${id}`, { name: body.name, slug: body.slug });
     return data;
 }
@@ -61,10 +58,12 @@ export async function getComments(postId: number): Promise<CommentDto[]> {
     const { data } = await api.get(`/api/comments/post/${postId}`);
     return data;
 }
+
 export async function addComment(postId: number, body: CreateCommentRequest): Promise<CommentDto> {
     const { data } = await api.post(`/api/comments/post/${postId}`, body);
     return data;
 }
+
 export async function deleteComment(commentId: number, email: string): Promise<CommentDto> {
     const { data } = await api.delete(`/api/comments/${commentId}`, { params: { email } });
     return data;
@@ -116,6 +115,7 @@ export async function uploadImage(file: File): Promise<string> {
     });
     return data;
 }
+
 export async function uploadVideo(file: File): Promise<string> {
     const fd = new FormData();
     fd.append('file', file);
