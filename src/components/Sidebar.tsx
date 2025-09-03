@@ -1,15 +1,16 @@
-// CHANGE: Sidebar 动态按分类渲染；修正 className 的模板字符串；保留 Console 区域逻辑
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { getToken } from '@/services/auth';
 import { getAllCategories } from '@/services/api';
 import type { CategoryDto } from '@/types/dtos';
 
-import avatarImage from 'D:\\java Project\\Blog_Front\\Resoures\\喜多.png';
-import magicHatImage from 'D:\\java Project\\Blog_Front\\Resoures\\HAt.png';
+import { getSettings } from '@/services/settings';
+import type { AppSettings, SocialLink } from '@/types/settings';
+
+import avatarImage from '../Resoures/喜多.png';
+import magicHatImage from '../Resoures/HAt.png';
 
 const item = (to: string, text: string) => (
-    // CHANGE: 修复模板字符串 & 添加基础类名
     <NavLink
         to={to}
         className={({ isActive }) =>
@@ -22,9 +23,9 @@ const item = (to: string, text: string) => (
 
 export default function Sidebar() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [categories, setCategories] = useState<CategoryDto[]>([]); // CHANGE: 动态分类
+    const [categories, setCategories] = useState<CategoryDto[]>([]);
+    const [settings, setSettings] = useState<AppSettings>(getSettings());
     const location = useLocation();
-    const magicHatLink = 'https://www.sunqixian.xyz';
 
     useEffect(() => {
         const token = getToken();
@@ -32,30 +33,47 @@ export default function Sidebar() {
     }, []);
 
     useEffect(() => {
-        // CHANGE: 拉取全部分类，驱动左侧栏
-        getAllCategories()
-            .then(setCategories)
-            .catch((e) => console.error('Failed to load categories for sidebar', e));
+        getAllCategories().then(setCategories).catch((e) => console.error('Failed to load categories for sidebar', e));
+    }, []);
+
+    // 监听设置变更（来自 ConsoleSettings 的 save/patch）
+    useEffect(() => {
+        const onUpdated = () => setSettings(getSettings());
+        window.addEventListener('app-settings-updated', onUpdated);
+        return () => window.removeEventListener('app-settings-updated', onUpdated);
     }, []);
 
     const isConsoleRoute = location.pathname.includes('/console');
+
+    // 头像优先取用户设置，否则用本地兜底
+    const avatarSrc = settings.site.avatarUrl && settings.site.avatarUrl.trim().length > 0
+        ? settings.site.avatarUrl
+        : (avatarImage as string);
+
+    // 渲染社交：magic 图标优先使用用户 iconUrl；没有的话回退到本地方帽图
+    const renderIconImg = (s: SocialLink) => {
+        const fallback = s.id === 'magic' ? (magicHatImage as string) : undefined;
+        const src = s.iconUrl && s.iconUrl.trim().length > 0 ? s.iconUrl : (fallback ?? s.iconUrl);
+        if (!src) return <div className="w-6 h-6 flex items-center justify-center text-[10px] text-gray-400">N/A</div>;
+        return <img src={src} alt={s.label} className="w-6 h-6" />;
+    };
 
     return (
         <aside className="hidden md:flex md:flex-col md:w-64 bg-gray-100 min-h-screen p-6 justify-between sticky top-0">
             <div>
                 <div className="flex items-center gap-3 mb-8">
-                    <div className="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center">
-                        <img src={avatarImage} alt="Kris Magic Avatar" className="w-full h-full object-cover rounded-full" />
+                    <div className="w-14 h-14 rounded-full bg-gray-200 overflow-hidden">
+                        <img src={avatarSrc} alt="Avatar" className="w-full h-full object-cover" />
                     </div>
                     <div>
-                        <div className="font-semibold text-lg">Kris Magic</div>
-                        <div className="text-xs text-gray-500">Blog & Notes</div>
+                        <div className="font-semibold text-lg">{settings.site.title || 'Kris Magic'}</div>
+                        <div className="text-xs text-gray-500">{settings.site.subtitle || 'Blog & Notes'}</div>
                     </div>
                 </div>
+
                 <nav className="space-y-2">
                     {item('/', 'Home')}
 
-                    {/* 过滤无效分类，并保证 key 唯一 */}
                     {(categories ?? [])
                         .filter(c => !!c && !!c.name && !!c.slug)
                         .map((c, idx) => (
@@ -71,41 +89,24 @@ export default function Sidebar() {
                         ))}
 
                     {item('/consulting', '咨询空间')}
+
                     {isLoggedIn && isConsoleRoute && (
                         <div className="pt-4 border-t border-gray-200 mt-4">
                             <div className="text-xs uppercase text-gray-400 mb-1">Console</div>
                             {item('/console/login', 'Login')}
                             {item('/console/dashboard', 'Dashboard')}
+                            {item('/console/settings', 'Settings')} {/* 新增：设置入口 */}
                         </div>
                     )}
                 </nav>
             </div>
 
             <div className="flex items-center gap-3 text-gray-500">
-                <a href="https://x.com" aria-label="X">
-                    <img
-                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/X_logo_2023.svg/1200px-X_logo_2023.svg.png"
-                        alt="X"
-                        className="w-6 h-6"
-                    />
-                </a>
-                <a href="https://youtube.com" aria-label="YouTube">
-                    <img
-                        src="https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%282013-2017%29.png"
-                        alt="YouTube"
-                        className="w-6 h-6"
-                    />
-                </a>
-                <a href="https://github.com" aria-label="GitHub">
-                    <img
-                        src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg"
-                        alt="GitHub"
-                        className="w-6 h-6"
-                    />
-                </a>
-                <a href={magicHatLink} aria-label="Magic Hat">
-                    <img src={magicHatImage} alt="Magic Hat" className="w-6 h-6" />
-                </a>
+                {settings.social.map((s) => (
+                    <a key={s.id} href={s.href} aria-label={s.label} title={s.label} target="_blank" rel="noreferrer">
+                        {renderIconImg(s)}
+                    </a>
+                ))}
             </div>
         </aside>
     );

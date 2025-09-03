@@ -10,6 +10,8 @@ import type {
 import { getToken } from './auth';
 
 const api = axios.create({ baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080' });
+
+// 自动加上 Authorization
 api.interceptors.request.use((config) => {
     const token = getToken();
     if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -81,14 +83,21 @@ export async function createPost(body: Partial<PostDetailDto>, categorySlug: str
     return data;
 }
 
-export async function createPostFromMd(file: File, categorySlug: string): Promise<PostDetailDto> {
-    const fd = new FormData();
-    fd.append('file', file);
+export async function createPostFromMd(
+    file: File,
+    categorySlug: string,
+    slug: string,
+    title?: string
+): Promise<PostDetailDto> {
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('slug', slug)
+    if (title) fd.append('title', title)
+
     const { data } = await api.post(`/api/posts/create-md`, fd, {
         params: { categorySlug },
-        headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return data;
+    })
+    return data
 }
 
 export async function updatePost(id: number, body: Partial<PostDetailDto>, categorySlug?: string): Promise<PostDetailDto> {
@@ -99,28 +108,26 @@ export async function updatePost(id: number, body: Partial<PostDetailDto>, categ
 export async function updatePostFromMd(id: number, file: File, categorySlug?: string): Promise<PostDetailDto> {
     const fd = new FormData();
     fd.append('file', file);
-    const { data } = await api.put(`/api/posts/update-md/${id}`, fd, {
-        params: { categorySlug },
-        headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const { data } = await api.put(`/api/posts/update-md/${id}`, fd, { params: { categorySlug } });
     return data;
 }
 
-// Uploads (后端若采用 multipart, 这里按 multipart 发送)
+// Uploads
 export async function uploadImage(file: File): Promise<string> {
     const fd = new FormData();
     fd.append('file', file);
-    const { data } = await api.post(`/api/posts/upload/image`, fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const { data } = await api.post(`/api/posts/upload/image`, fd);
     return data;
 }
 
 export async function uploadVideo(file: File): Promise<string> {
     const fd = new FormData();
     fd.append('file', file);
-    const { data } = await api.post(`/api/posts/upload/video`, fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const { data } = await api.post(`/api/posts/upload/video`, fd);
     return data;
+}
+
+export async function deletePostBySlug(slug: string): Promise<string> {
+    const { data } = await api.delete(`/api/posts/${encodeURIComponent(slug)}`);
+    return data as string;
 }
