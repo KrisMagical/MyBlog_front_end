@@ -56,18 +56,32 @@ export async function postLike(postId: number, positive: boolean): Promise<LikeR
 }
 
 // Comments
+// 修改评论相关请求，避免带上 Authorization 头部
 export async function getComments(postId: number): Promise<CommentDto[]> {
-    const { data } = await api.get(`/api/comments/post/${postId}`);
+    const { data } = await api.get(`/api/comments/post/${postId}`, {
+        headers: {
+            Authorization: '', // 不携带 Authorization 头
+        }
+    });
     return data;
 }
 
 export async function addComment(postId: number, body: CreateCommentRequest): Promise<CommentDto> {
-    const { data } = await api.post(`/api/comments/post/${postId}`, body);
+    const { data } = await api.post(`/api/comments/post/${postId}`, body, {
+        headers: {
+            Authorization: '', // 不携带 Authorization 头
+        }
+    });
     return data;
 }
 
 export async function deleteComment(commentId: number, email: string): Promise<CommentDto> {
-    const { data } = await api.delete(`/api/comments/${commentId}`, { params: { email } });
+    const { data } = await api.delete(`/api/comments/${commentId}`, {
+        params: { email },
+        headers: {
+            Authorization: '', // 不携带 Authorization 头
+        }
+    });
     return data;
 }
 

@@ -9,36 +9,59 @@ import Comments from '@/components/Comments'
 
 export default function PostDetail() {
     const { slug } = useParams()
+
+    // State hooks
     const [post, setPost] = useState<PostDetailDto | null>(null)
     const [likes, setLikes] = useState<LikeResponseDto>({ likes: 0, dislikes: 0, message: '' })
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+    const [notification, setNotification] = useState('') // For success or failure messages
+    const [notificationType, setNotificationType] = useState<'success' | 'error' | ''>('') // Determine notification type
 
-    const fetchAll = async () => {
+    // Fetch post and like/dislike count
+    const fetchPostData = async () => {
         try {
-            const [p, l] = await Promise.all([
+            const [postDetail, likeData] = await Promise.all([
                 getPostDetail(slug!),
                 getLikeAndDislikeCount(slug!)
             ])
-            setPost(p)
-            setLikes(l)
-        } catch (e: any) {
-            setError(e?.message || '加载失败')
+            setPost(postDetail)
+            setLikes(likeData)
+        } catch (e) {
+            setError('加载失败')
         } finally {
             setLoading(false)
         }
     }
 
     useEffect(() => {
-        setLoading(true)
-        fetchAll()
-    }, [slug])
+        fetchPostData()
+    }, [slug]) // Only re-fetch when slug changes
 
+    // Toggle like/dislike and show notification
     const toggleLike = async (positive: boolean) => {
         if (!post?.id) return
-        await postLike(post.id, positive)
-        const l = await getLikeAndDislikeCount(slug!)
-        setLikes(l)
+
+        try {
+            await postLike(post.id, positive)
+            const updatedLikes = await getLikeAndDislikeCount(slug!)
+            setLikes(updatedLikes)
+
+            // Show success message
+            setNotification(positive ? '感谢点赞！' : '谢谢反馈！')
+            setNotificationType('success') // Set notification type to success
+            setTimeout(() => {
+                setNotification('')
+                setNotificationType('') // Clear after timeout
+            }, 3000) // Hide message after 3 seconds
+        } catch (e) {
+            setNotification('Please do not like repeatedly')
+            setNotificationType('error') // Set notification type to error
+            setTimeout(() => {
+                setNotification('')
+                setNotificationType('') // Clear after timeout
+            }, 3000) // Hide message after 3 seconds
+        }
     }
 
     if (loading) return <Skeleton lines={12} />
@@ -58,10 +81,26 @@ export default function PostDetail() {
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content || ''}</ReactMarkdown>
             </div>
 
+            {/* Notification for success or error */}
+            {notification && (
+                <div
+                    className={`mb-4 p-2 rounded-md ${notificationType === 'success' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}
+                >
+                    {notification}
+                </div>
+            )}
+
             <div className="flex items-center gap-3 mb-8">
-                <button onClick={() => toggleLike(true)} className="px-3 py-1 rounded-full border hover:shadow">👍 赞同 ({likes.likes || 0})</button>
-                <button onClick={() => toggleLike(false)} className="px-3 py-1 rounded-full border hover:shadow">👎 反对 ({likes.dislikes || 0})</button>
-                {likes.message ? <span className="text-xs text-gray-500">{likes.message}</span> : null}
+                <button
+                    onClick={() => toggleLike(true)}
+                    className="px-3 py-1 rounded-full border hover:shadow">
+                    👍 赞同 ({likes.likes || 0})
+                </button>
+                <button
+                    onClick={() => toggleLike(false)}
+                    className="px-3 py-1 rounded-full border hover:shadow">
+                    👎 反对 ({likes.dislikes || 0})
+                </button>
             </div>
 
             <Comments postId={post.id!} />

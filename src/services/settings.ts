@@ -24,7 +24,7 @@ export const defaultSettings: AppSettings = {
     ],
 };
 
-// ✅ 专用解析函数，去掉不必要的泛型，避免 TS2339
+// 专用解析函数，去掉不必要的泛型，避免 TS2339
 function safeParse(raw: string | null, fallback: AppSettings): AppSettings {
     if (!raw) return fallback;
     try {
