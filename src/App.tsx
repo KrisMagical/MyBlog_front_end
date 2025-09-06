@@ -6,6 +6,7 @@ import PostDetail from '@/pages/PostDetail';
 import Consulting from '@/pages/Consulting';
 import Login from '@/pages/Login';
 import Dashboard from '@/pages/Dashboard';
+import GenericPage from '@/pages/GenericPage';
 import { getToken } from '@/services/auth';
 
 export default function App() {
@@ -22,19 +23,24 @@ export default function App() {
                 <Route path="/my-shares" element={<CategoryList categorySlug="my-shares" />} />
                 <Route path="/creations" element={<CategoryList categorySlug="creations" />} />
 
-                {/* 详情页（按你的现有实现保留） */}
+
                 <Route path="/blog/:slug" element={<PostDetail />} />
                 <Route path="/my-shares/:slug" element={<PostDetail />} />
                 <Route path="/creations/:slug" element={<PostDetail />} />
 
+
                 <Route path="/consulting" element={<Consulting />} />
 
-                {/* Console 仍可直链访问，但不出现在侧边栏 */}
-                <Route path="/console/login" element={<Login />} />
+
+                <Route path="/page/:slug" element={<GenericPage />} />
+
+c                <Route path="/console/login" element={<Login />} />
                 <Route
                     path="/console/dashboard"
                     element={getToken() ? <Dashboard /> : <Navigate to="/console/login" replace />}
                 />
+
+
             </Routes>
         </Layout>
     );

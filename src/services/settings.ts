@@ -1,11 +1,10 @@
 import type { AppSettings, SocialLink } from '@/types/settings';
 
-// 默认图标（与原 Sidebar 保持一致）
 const DEFAULT_ICONS = {
     x: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/X_logo_2023.svg/1200px-X_logo_2023.svg.png',
     youtube: 'https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%282013-2017%29.png',
     github: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg',
-    magicHat: '' // 交给 Sidebar 内部的魔法帽本地图标来处理（或你可以放在线地址）
+    magicHat: ''
 };
 
 const STORAGE_KEY = 'app_settings_v1';
@@ -14,7 +13,7 @@ export const defaultSettings: AppSettings = {
     site: {
         title: 'Kris Magic',
         subtitle: 'Blog & Notes',
-        avatarUrl: '' // 使用你原来的本地头像作为兜底
+        avatarUrl: ''
     },
     social: [
         { id: 'x',       label: 'X',        href: 'https://x.com',        iconUrl: DEFAULT_ICONS.x },
@@ -38,7 +37,7 @@ function safeParse(raw: string | null, fallback: AppSettings): AppSettings {
     }
 }
 
-// 简单 URL 校验（宽松）
+// 简单 URL 校验
 export const isValidUrl = (url: string) => /^https?:\/\/.+/i.test(url);
 
 // 读取全部设置

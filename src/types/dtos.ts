@@ -55,3 +55,11 @@ export interface CategoryDto {
     name: string
     slug: string
 }
+
+// ✅ 新增 PageDto
+export interface PageDto {
+    id?: number
+    slug: string
+    title: string
+    content?: string
+}

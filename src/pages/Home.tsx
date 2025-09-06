@@ -1,4 +1,3 @@
-// CHANGE: 保持你现有逻辑，只做微调：encode slug 调用、健壮性
 import { useEffect, useState } from 'react';
 import { getAllCategories, getPostsByCategory } from '@/services/api';
 import type { CategoryDto, PostSummaryDto } from '@/types/dtos';
