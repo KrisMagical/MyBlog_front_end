@@ -1,50 +1,56 @@
-import { useEffect, useState } from "react"
-import { getAllCategories, createCategory, updateCategory } from "@/services/api"
-import type { CategoryDto } from "@/types/dtos"
+import { useEffect, useState, useCallback } from "react";
+import { getAllCategories, createCategory, updateCategoryByName } from "@/services/api";
+import type { CategoryDto } from "@/types/dtos";
 
 export default function CategoryManager() {
-    const [categories, setCategories] = useState<CategoryDto[]>([])
-    const [loading, setLoading] = useState(true)
-    const [newName, setNewName] = useState("")
-    const [newSlug, setNewSlug] = useState("")
-    const [editing, setEditing] = useState<CategoryDto | null>(null)
+    const [categories, setCategories] = useState<CategoryDto[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [newName, setNewName] = useState("");
+    const [newSlug, setNewSlug] = useState("");
+    const [editing, setEditing] = useState<CategoryDto | null>(null);
+    const [editingOriginalName, setEditingOriginalName] = useState<string | null>(null);
 
-    const fetchCategories = async () => {
-        setLoading(true)
+    const fetchCategories = useCallback(async () => {
+        setLoading(true);
         try {
-            const data = await getAllCategories()
-            setCategories(data)
+            const data = await getAllCategories();
+            setCategories(data);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    }, []);
 
     useEffect(() => {
-        fetchCategories()
-    }, [])
+        void fetchCategories();
+    }, [fetchCategories]);
 
     const handleCreate = async () => {
-        if (!newName || !newSlug) return alert("请填写完整分类信息")
+        if (!newName.trim() || !newSlug.trim()) return alert("请填写完整分类信息");
         try {
-            await createCategory({ id: 0, name: newName, slug: newSlug })
-            setNewName("")
-            setNewSlug("")
-            fetchCategories()
-        } catch (e) {
-            alert("创建分类失败")
+            await createCategory({ id: 0, name: newName.trim(), slug: newSlug.trim() });
+            setNewName("");
+            setNewSlug("");
+            await fetchCategories();
+        } catch {
+            alert("创建分类失败");
         }
-    }
+    };
 
     const handleUpdate = async () => {
-        if (!editing) return
+        if (!editing || !editingOriginalName) return;
         try {
-            await updateCategory(editing.id!, { id: editing.id, name: editing.name, slug: editing.slug })
-            setEditing(null)
-            fetchCategories()
-        } catch (e) {
-            alert("更新分类失败")
+            await updateCategoryByName(editingOriginalName, {
+                id: editing.id,
+                name: editing.name.trim(),
+                slug: editing.slug.trim(),
+            });
+            setEditing(null);
+            setEditingOriginalName(null);
+            await fetchCategories();
+        } catch {
+            alert("更新分类失败");
         }
-    }
+    };
 
     return (
         <div className="p-4 border rounded-xl space-y-4">
@@ -91,7 +97,13 @@ export default function CategoryManager() {
                                     <button className="px-2 py-1 bg-green-600 text-white rounded" onClick={handleUpdate}>
                                         保存
                                     </button>
-                                    <button className="px-2 py-1 border rounded" onClick={() => setEditing(null)}>
+                                    <button
+                                        className="px-2 py-1 border rounded"
+                                        onClick={() => {
+                                            setEditing(null);
+                                            setEditingOriginalName(null);
+                                        }}
+                                    >
                                         取消
                                     </button>
                                 </>
@@ -99,7 +111,13 @@ export default function CategoryManager() {
                                 <>
                                     <span>{c.name}</span>
                                     <span className="text-gray-500 text-sm">({c.slug})</span>
-                                    <button className="px-2 py-1 border rounded" onClick={() => setEditing(c)}>
+                                    <button
+                                        className="px-2 py-1 border rounded"
+                                        onClick={() => {
+                                            setEditing(c);
+                                            setEditingOriginalName(c.name); // 记录原始 name，供路径参数使用
+                                        }}
+                                    >
                                         编辑
                                     </button>
                                 </>
@@ -109,5 +127,5 @@ export default function CategoryManager() {
                 </ul>
             )}
         </div>
-    )
+    );
 }

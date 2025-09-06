@@ -6,11 +6,10 @@ import type {
     LikeResponseDto,
     PostDetailDto,
     PostSummaryDto,
-    PageDto, // 从 types 引入
+    PageDto,
 } from '@/types/dtos';
 import { getToken } from './auth';
 
-// ✅ 兼容旧用法：允许从 "@/services/api" 直接导入 PageDto
 export type { PageDto } from '@/types/dtos';
 
 const api = axios.create({ baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080' });
@@ -31,8 +30,13 @@ export async function createCategory(body: CategoryDto): Promise<CategoryDto> {
     const { data } = await api.post('/api/categories', { name: body.name, slug: body.slug });
     return data;
 }
-export async function updateCategory(id: number, body: CategoryDto): Promise<CategoryDto> {
-    const { data } = await api.put(`/api/categories/${id}`, { name: body.name, slug: body.slug });
+
+// ✅ 方案B：按 name 更新
+export async function updateCategoryByName(originalName: string, body: CategoryDto): Promise<CategoryDto> {
+    const { data } = await api.put(
+        `/api/categories/${encodeURIComponent(originalName)}`,
+        { name: body.name, slug: body.slug }
+    );
     return data;
 }
 
@@ -87,7 +91,6 @@ export async function createPost(body: Partial<PostDetailDto>, categorySlug: str
     return data;
 }
 
-// ⚠ 与 OpenAPI 对齐：/api/posts/create-md 的 slug/title 在 query 上
 export async function createPostFromMd(
     file: File,
     categorySlug: string,
@@ -96,9 +99,7 @@ export async function createPostFromMd(
 ): Promise<PostDetailDto> {
     const fd = new FormData();
     fd.append('file', file);
-    const { data } = await api.post(`/api/posts/create-md`, fd, {
-        params: { categorySlug, slug, title },
-    });
+    const { data } = await api.post(`/api/posts/create-md`, fd, { params: { categorySlug, slug, title } });
     return data;
 }
 
@@ -139,16 +140,15 @@ export async function getPageBySlug(slug: string): Promise<PageDto> {
     return data;
 }
 
-// ✅ 新增：列出全部页面（用于 Sidebar 动态渲染）
+// （如果后端未实现 GET /api/pages，可移除此函数或实现后端）
 export async function getAllPages(): Promise<PageDto[]> {
     const { data } = await api.get('/api/pages', {
-        headers: { Authorization: '' }, // 公共 GET
+        headers: { Authorization: '' },
     });
     return data;
 }
 
 export async function createPage(body: Partial<PageDto>): Promise<PageDto> {
-    // body 需至少包含 slug, title（content 可选）
     const { data } = await api.post(`/api/pages`, body);
     return data;
 }
@@ -163,9 +163,7 @@ export async function deletePageBySlug(slug: string): Promise<string> {
 export async function createPageFromMd(file: File, slug: string, title?: string): Promise<PageDto> {
     const fd = new FormData();
     fd.append('file', file);
-    const { data } = await api.post(`/api/pages/create-md`, fd, {
-        params: { slug, title },
-    });
+    const { data } = await api.post(`/api/pages/create-md`, fd, { params: { slug, title } });
     return data;
 }
 export async function updatePageFromMdBySlug(slug: string, file: File): Promise<PageDto> {

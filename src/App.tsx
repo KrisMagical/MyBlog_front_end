@@ -28,10 +28,6 @@ export default function App() {
                 <Route path="/my-shares/:slug" element={<PostDetail />} />
                 <Route path="/creations/:slug" element={<PostDetail />} />
 
-
-                <Route path="/consulting" element={<Consulting />} />
-
-
                 <Route path="/page/:slug" element={<GenericPage />} />
 
 c                <Route path="/console/login" element={<Login />} />
