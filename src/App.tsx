@@ -3,7 +3,6 @@ import Layout from '@/components/Layout';
 import Home from '@/pages/Home';
 import CategoryList from '@/pages/CategoryList';
 import PostDetail from '@/pages/PostDetail';
-import Consulting from '@/pages/Consulting';
 import Login from '@/pages/Login';
 import Dashboard from '@/pages/Dashboard';
 import GenericPage from '@/pages/GenericPage';
@@ -30,7 +29,7 @@ export default function App() {
 
                 <Route path="/page/:slug" element={<GenericPage />} />
 
-c                <Route path="/console/login" element={<Login />} />
+                <Route path="/console/login" element={<Login />} />
                 <Route
                     path="/console/dashboard"
                     element={getToken() ? <Dashboard /> : <Navigate to="/console/login" replace />}

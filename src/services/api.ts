@@ -31,13 +31,17 @@ export async function createCategory(body: CategoryDto): Promise<CategoryDto> {
     return data;
 }
 
-// ✅ 方案B：按 name 更新
 export async function updateCategoryByName(originalName: string, body: CategoryDto): Promise<CategoryDto> {
     const { data } = await api.put(
         `/api/categories/${encodeURIComponent(originalName)}`,
         { name: body.name, slug: body.slug }
     );
     return data;
+}
+
+export async function deleteCategoryByName(name: string): Promise<string> {
+    const { data } = await api.delete(`/api/categories/${encodeURIComponent(name)}`);
+    return data as string;
 }
 
 // ---------- Posts ----------

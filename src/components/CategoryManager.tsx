@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { getAllCategories, createCategory, updateCategoryByName } from "@/services/api";
+import { getAllCategories, createCategory, updateCategoryByName, deleteCategoryByName } from "@/services/api"; // ← 新增 deleteCategoryByName
 import type { CategoryDto } from "@/types/dtos";
 
 export default function CategoryManager() {
@@ -49,6 +49,24 @@ export default function CategoryManager() {
             await fetchCategories();
         } catch {
             alert("更新分类失败");
+        }
+    };
+
+    // ✅ 新增：删除分类
+    const handleDelete = async (name: string) => {
+        if (!name) return;
+        if (!confirm(`确定要删除分类「${name}」吗？此操作将删除该分类下的所有文章（及其评论），不可恢复！`)) return;
+        try {
+            await deleteCategoryByName(name);
+            // 若正在编辑被删项，重置编辑状态
+            if (editing?.name === name) {
+                setEditing(null);
+                setEditingOriginalName(null);
+            }
+            await fetchCategories();
+            alert("分类已删除");
+        } catch {
+            alert("删除分类失败");
         }
     };
 
@@ -119,6 +137,13 @@ export default function CategoryManager() {
                                         }}
                                     >
                                         编辑
+                                    </button>
+                                    {/* ✅ 新增删除按钮 */}
+                                    <button
+                                        className="px-2 py-1 border border-red-500 text-red-600 rounded"
+                                        onClick={() => handleDelete(c.name)}
+                                    >
+                                        删除
                                     </button>
                                 </>
                             )}
