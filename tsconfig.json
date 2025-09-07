@@ -13,13 +13,15 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
+      "@/*": ["src/*"],                 // 👈 新增：让 @ 指向 src 根
       "@/components/*": ["src/components/*"],
       "@/pages/*": ["src/pages/*"],
       "@/services/*": ["src/services/*"],
       "@/hooks/*": ["src/hooks/*"],
-      "@/types/*": ["src/types/*"]
+      "@/types/*": ["src/types/*"],
+      "@/assets/*": ["src/assets/*"]     // 👈 可选：显式映射 assets
     },
-    "types": ["vite/client"],
+    "types": ["vite/client", "vite-plugin-svgr/client"], // 👈 新增 svgr 类型
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },

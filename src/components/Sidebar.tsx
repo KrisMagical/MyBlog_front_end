@@ -7,8 +7,8 @@ import type {CategoryDto, PageDto} from '@/types/dtos';
 import {getSettings} from '@/services/settings';
 import type {AppSettings, SocialLink} from '@/types/settings';
 
-import avatarImage from '../Resoures/喜多.png';
-import magicHatImage from '../Resoures/HAt.png';
+import avatarImage from '../Resources/喜多.png';
+import magicHatImage from '../Resources/HAt.png';
 
 const item = (to: string, text: string) => (
     <NavLink

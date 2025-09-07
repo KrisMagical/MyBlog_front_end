@@ -16,11 +16,9 @@ export default function Home() {
                 const cats = await getAllCategories();
                 if (!mounted) return;
 
-                // ✅ 仅保留 name/slug 都存在的分类
                 const validCats = (cats ?? []).filter(c => !!c?.name && !!c?.slug);
                 setCategories(validCats);
 
-                // 只有有有效分类时才请求文章
                 if (validCats.length) {
                     const posts = await getPostsByCategory(validCats[0].slug);
                     if (!mounted) return;
@@ -35,10 +33,9 @@ export default function Home() {
         return () => { mounted = false; };
     }, []);
 
-// 渲染分类标签时，保证 key 唯一，不用 null
     {categories.map((c, idx) => (
         <span
-            key={`${c.id ?? 'idless'}-${c.slug ?? 'slugless'}-${idx}`}   // ✅ 唯一 key
+            key={`${c.id ?? 'idless'}-${c.slug ?? 'slugless'}-${idx}`}
             className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm"
         >
     {c.name}
