@@ -23,7 +23,6 @@ export const defaultSettings: AppSettings = {
     ],
 };
 
-// 专用解析函数，去掉不必要的泛型，避免 TS2339
 function safeParse(raw: string | null, fallback: AppSettings): AppSettings {
     if (!raw) return fallback;
     try {
@@ -37,10 +36,8 @@ function safeParse(raw: string | null, fallback: AppSettings): AppSettings {
     }
 }
 
-// 简单 URL 校验
 export const isValidUrl = (url: string) => /^https?:\/\/.+/i.test(url);
 
-// 读取全部设置
 export function getSettings(): AppSettings {
     const raw = typeof window !== 'undefined' ? localStorage.getItem('app_settings_v1') : null;
     const merged = safeParse(raw, defaultSettings);
@@ -48,14 +45,12 @@ export function getSettings(): AppSettings {
     return merged;
 }
 
-// 保存并广播“已更新”事件
 export function saveSettings(next: AppSettings) {
     if (typeof window === 'undefined') return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     window.dispatchEvent(new Event('app-settings-updated'));
 }
 
-// 仅更新某一部分（例如 site 或 social），其余保留
 export function patchSettings(partial: {
     site?: Partial<AppSettings['site']>;
     social?: SocialLink[];
@@ -68,12 +63,10 @@ export function patchSettings(partial: {
     saveSettings(next);
 }
 
-// 重置为默认
 export function resetSettings() {
     saveSettings(defaultSettings);
 }
 
-// 便捷工具：新增一个社交项
 export function addSocialLink(link: Omit<SocialLink, 'id'>) {
     const current = getSettings();
     const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -82,14 +75,12 @@ export function addSocialLink(link: Omit<SocialLink, 'id'>) {
     return id;
 }
 
-// 便捷工具：删除社交项
 export function removeSocialLink(id: string) {
     const current = getSettings();
     const next = { ...current, social: current.social.filter(s => s.id !== id) };
     saveSettings(next);
 }
 
-// 便捷工具：更新某个社交项
 export function updateSocialLink(id: string, patch: Partial<Omit<SocialLink, 'id'>>) {
     const current = getSettings();
     const next = {

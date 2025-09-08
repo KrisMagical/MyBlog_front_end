@@ -39,7 +39,6 @@ export default function Dashboard() {
     const [isUpdate, setIsUpdate] = useState(false)
     const [updateId, setUpdateId] = useState<number | null>(null)
 
-    // ✅ 新增：页面模式（Page）/ 文章模式（Post）
     const [isPageMode, setIsPageMode] = useState(false)
 
     // 按 slug 加载旧内容
@@ -74,7 +73,6 @@ export default function Dashboard() {
         }
     }
 
-    // ✅ 根据模式与 slug 加载旧内容进入更新模式
     const handleLoadForUpdate = async () => {
         if (!loadSlug) return alert(`请先输入要加载的${isPageMode ? "页面" : "文章"} Slug`)
         try {
@@ -121,7 +119,7 @@ export default function Dashboard() {
         setFileMode(false)
     }
 
-    // ✅ 删除（按模式调用）
+
     const handleDelete = async () => {
         const delSlug = slug || loadSlug
         if (!delSlug) return alert("当前没有可删除的 Slug")
@@ -140,7 +138,7 @@ export default function Dashboard() {
         }
     }
 
-    // ✅ 提交（创建/更新），按模式调用不同 API
+
     const handleSubmit = async () => {
         // Page 模式无需分类；其余校验一致
         if (!fileMode && (!title || !slug || !content)) {
@@ -207,7 +205,7 @@ export default function Dashboard() {
                 控制台 - {isPageMode ? (isUpdate ? "更新页面" : "新建页面") : isUpdate ? "更新文章" : "新建文章"}
             </h1>
 
-            {/* ✅ 模式切换 */}
+
             <div className="flex gap-3">
                 <button
                     onClick={() => {
@@ -279,7 +277,6 @@ export default function Dashboard() {
                 />
             )}
 
-            {/* 分类选择（✅ 页面模式不显示） */}
             {!isPageMode && (
                 <div className="flex items-center gap-3">
                     <label className="text-sm text-gray-600">分类</label>

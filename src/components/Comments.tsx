@@ -20,13 +20,21 @@ export default function Comments({ postId }: { postId: number }) {
     }, [postId])
 
     const submit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setSubmitting(true)
-        await addComment(postId, form)
-        setForm({ name: '', email: '', content: '' })
-        await load()
-        setSubmitting(false)
-    }
+        e.preventDefault();
+        setSubmitting(true);
+
+        if (form.email.includes("qq.com")) {
+            alert("Please enter a different email address, QQ email is not allowed.");
+            setSubmitting(false);  // Stop submitting process
+            return; // Exit the submit function
+        }
+
+        await addComment(postId, form);
+        setForm({ name: '', email: '', content: '' });
+        await load();
+        setSubmitting(false);
+    };
+
 
     const remove = async (commentId: number) => {
         const email = window.prompt('请输入你的邮箱以删除该评论（需与创建时一致）')
@@ -70,7 +78,7 @@ export default function Comments({ postId }: { postId: number }) {
                 <input
                     type="email"
                     required
-                    placeholder="邮箱（用于删除验证）"
+                    placeholder="邮箱（不会展示）"
                     className="w-full border rounded-xl px-3 py-2"
                     value={form.email}
                     onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))}

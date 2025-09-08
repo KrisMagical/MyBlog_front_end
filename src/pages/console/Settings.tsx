@@ -25,7 +25,7 @@ export default function ConsoleSettings() {
     const onChangeSite = (k: 'title' | 'subtitle', v: string) => {
         const next = { ...settings, site: { ...settings.site, [k]: v } }
         setSettings(next)
-        patchSettings({ site: { [k]: v } }) // ✅ 不再需要 as any
+        patchSettings({ site: { [k]: v } })
     }
 
     const onUploadAvatar = async (file?: File | null) => {
@@ -34,7 +34,7 @@ export default function ConsoleSettings() {
             const url = await uploadImage(file)
             const next = { ...settings, site: { ...settings.site, avatarUrl: url } }
             setSettings(next)
-            patchSettings({ site: { avatarUrl: url } }) // ✅ 类型完全匹配
+            patchSettings({ site: { avatarUrl: url } })
             alert('头像已更新')
         } catch {
             alert('头像上传失败')

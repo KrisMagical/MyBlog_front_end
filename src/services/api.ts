@@ -14,7 +14,6 @@ export type { PageDto } from '@/types/dtos';
 
 const api = axios.create({ baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080' });
 
-// 自动加上 Authorization
 api.interceptors.request.use((config) => {
     const token = getToken();
     if (token) config.headers.Authorization = `Bearer ${token}`;

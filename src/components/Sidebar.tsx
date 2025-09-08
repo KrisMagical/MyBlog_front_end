@@ -1,7 +1,7 @@
 import {useState, useEffect} from 'react';
 import {NavLink, useLocation} from 'react-router-dom';
 import {getToken} from '@/services/auth';
-import {getAllCategories, getAllPages} from '@/services/api'; // 👈 新增 getAllPages
+import {getAllCategories, getAllPages} from '@/services/api';
 import type {CategoryDto, PageDto} from '@/types/dtos';
 
 import {getSettings} from '@/services/settings';
